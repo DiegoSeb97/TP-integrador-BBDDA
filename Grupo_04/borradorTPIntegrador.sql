@@ -82,40 +82,43 @@ precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
 drop table catalogo.accesorio_electronico;
 create table catalogo.accesorio_electronico(
 id int identity(1,1) primary key,
-producto varchar(20),
-precioUnitUsd varchar(20)
+producto varchar(100),
+precioUnitUsd varchar(100)
 );
 
+drop table catalogo.producto_importado;
 create table catalogo.producto_importado(
 idProducto int primary key,
-NombreProducto varchar(20),
-Proveedor varchar(20),
+NombreProducto varchar(50),
+Proveedor varchar(50),
 Categoria varchar(20),
-CantidadPorUnidad int CHECK (CANTIDADPORUNIDAD >= 0),
+CantidadPorUnidad varchar(100),
 PrecioUnidad numeric (10, 2) check (precioUnidad > 0)
 );
 
+drop table SUCURSAL.sucursal;
 create table SUCURSAL.sucursal(
 id int identity(1,1) primary key,
 ciudad varchar(20),
-direccion varchar(70),
-horario varchar(30),
-telefono char(15),
+direccion varchar(100),
+horario varchar(50),
+telefono varchar(15),
 baja char(2) default 'NO',
 );
 
+drop table SUCURSAL.empleado;
 create table SUCURSAL.empleado(
-legajoId int identity(1,1) primary key,
-nombre varchar(20),
+legajoId int primary key,
+nombre varchar(30),
 apellido varchar(20),
-dni char(9),
+dni varchar(15),
 direccion varchar(100),
-email_personal varchar(50),
-email_empresarial varchar(50),
+email_personal varchar(100),
+email_empresarial varchar(100),
 cuil char(12),
-cargo varchar(20),
-sucursal varchar(20),
-turno varchar(20), 
+cargo varchar(30),
+sucursal varchar(30),
+turno varchar(30), 
 baja char(2) default 'NO',
 );
 
