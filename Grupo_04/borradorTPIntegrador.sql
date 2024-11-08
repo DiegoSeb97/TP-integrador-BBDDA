@@ -35,6 +35,7 @@ Churquina Diego Sebastián DNI: 40394243
 create database Com5600G04;
 use Com5600G04;
 go;*/
+
 create schema catalogo;
 go;
 create schema ventasSucursal;
@@ -43,8 +44,10 @@ CREATE SCHEMA SUCURSAL;
 GO;
 
 --CREACIÓN DE LAS TABLAS
+/*
+--id int identity(1,1) primary key
 create table catalogo.producto(
-id int IDENTITY(1, 1) primary key,
+id int identity(1,1) primary key,
 categoria varchar(30),
 nombre varchar(30),
 precio numeric(10, 2) check (precio > 0),
@@ -52,11 +55,35 @@ precio_referencia numeric(10, 2) check (precio_referencia > 0),
 unidad_referencia varchar(5),
 fecha date
 );
+*/
+-------------------------------------------
+--test tabla producto
+drop table catalogo.producto;
+create table catalogo.producto(
+id varchar(100),
+categoria varchar(100),
+nombre varchar(100),
+precio varchar(100),
+precio_referencia varchar(100),
+unidad_referencia varchar(100),
+fecha varchar(100)
+);
+----------------------------------------
 
+/*
 create table catalogo.accesorio_electronico(
 id int identity(1,1) primary key,
 producto varchar(20),
 precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
+);
+*/
+
+--test tabla accesorio electronico
+drop table catalogo.accesorio_electronico;
+create table catalogo.accesorio_electronico(
+id int identity(1,1) primary key,
+producto varchar(20),
+precioUnitUsd varchar(20)
 );
 
 create table catalogo.producto_importado(
@@ -92,6 +119,7 @@ turno varchar(20),
 baja char(2) default 'NO',
 );
 
+/*
 create table ventasSucursal.venta_registrada(
 id_factura varchar(11) primary key ,
 tipo_de_factura char(1),
@@ -106,10 +134,33 @@ hora time,
 medio_de_pago varchar(10),
 empleado_id int,
 identificador_de_pago varchar(30),
-valida char(2) default 'si',
+valida char(2) default 'si',--!!
 constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
 );
 GO;
+*/
+/******************************************/
+--test tabla venta_registrada
+drop table ventasSucursal.venta_registrada;
+create table ventasSucursal.venta_registrada(
+id_factura varchar(11) primary key ,
+tipo_de_factura char(1),
+ciudad varchar(200),
+tipo_de_cliente varchar(100),
+genero varchar(100),
+producto varchar(100),
+precio_unitario varchar(500),
+cantidad smallint,
+fecha date,
+hora time,
+medio_de_pago varchar(50),
+empleado_id int,
+identificador_de_pago varchar(100),
+constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
+);
+go
+
+/******************************************/
 
 --stored procedures
 /*
