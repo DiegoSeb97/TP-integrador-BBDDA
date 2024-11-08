@@ -38,22 +38,22 @@ use Com5600G04;
 go
 
 create schema catalogo;
-go;
+go
 create schema ventasSucursal;
-go;
+go
 CREATE SCHEMA SUCURSAL;
-GO;
+GO
 
 --CREACIÓN DE LAS TABLAS
 create or alter procedure catalogo.crear_tabla_producto as
 begin
 	create table catalogo.producto(
-	id int identity(1,1) primary key,
-	categoria varchar(30),
-	nombre varchar(30),
-	precio numeric(10, 2) check (precio > 0),
-	precio_referencia numeric(10, 2) check (precio_referencia > 0),
-	unidad_referencia varchar(5),
+	id int primary key,
+	categoria varchar(100),
+	nombre varchar(100),
+	precio varchar(50),
+	precio_referencia varchar(50),
+	unidad_referencia varchar(50),
 	fecha date);
 end
 go
@@ -61,7 +61,7 @@ create or alter procedure catalogo.crear_tabla_accesorio_electronico as
 begin
 	create table catalogo.accesorio_electronico(
 	id int identity(1,1) primary key,
-	producto varchar(20),
+	producto varchar(100),
 	precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
 	);
 end
@@ -82,9 +82,9 @@ create or alter procedure SUCURSAL.crear_tabla_sucursal as
 begin
 	create table SUCURSAL.sucursal(
 	id int identity(1,1) primary key,
-	ciudad varchar(20),
-	direccion varchar(70),
-	horario varchar(30),
+	ciudad varchar(50),
+	direccion varchar(100) unique,
+	horario varchar(50),
 	telefono char(15),
 	baja char(2) default 'NO',
 	);
@@ -127,7 +127,7 @@ begin
 	constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
 	);
 end
-GO;
+GO
 
 --stored procedures
 /*

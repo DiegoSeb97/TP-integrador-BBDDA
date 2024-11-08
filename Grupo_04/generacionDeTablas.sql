@@ -13,7 +13,7 @@ go
 exec SUCURSAL.crear_tabla_empleado;
 go
 exec ventasSucursal.crear_tabla_ventas_registradas;
-go
+
 
 
 --test
@@ -23,8 +23,8 @@ drop table catalogo.accesorio_electronico;
 go
 drop table catalogo.producto_importado;
 go
-drop table SUCURSAL.empleado;
-go
 drop table SUCURSAL.sucursal;
 go
 drop table ventasSucursal.venta_registrada;
+go
+drop table SUCURSAL.empleado;
