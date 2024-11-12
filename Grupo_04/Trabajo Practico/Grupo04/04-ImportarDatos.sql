@@ -64,8 +64,13 @@ begin
 		'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Productos\Productos_importados.xlsx',
 		'select * from [Listado de productos$]');
 	
-	--realizar insert en tabla, solucionar problema de la cantidad por unidad.
-	select * from #prod_imp_temp;
+	insert into catalogo.producto_importado
+	select idProd, NombreProducto, Proveedor, Categoria, CantidadPorUnidad, 
+		cast(PrecioUnidad as numeric(10,2))
+	from #prod_imp_temp;
+
+	--select * from catalogo.producto_importado
+	--select * from #prod_imp_temp;
 	drop table #prod_imp_temp;
 end
 go
@@ -147,7 +152,7 @@ begin
 	--select * from SUCURSAL.empleado;
 	drop table #empl_temp;
 end
-
+go
 
 --inserto desde catalogo.csv en tabla producto
 CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_CSV AS

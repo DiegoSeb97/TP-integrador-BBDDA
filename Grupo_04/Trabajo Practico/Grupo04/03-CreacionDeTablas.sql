@@ -38,90 +38,142 @@ Ezequiel Muñoz Palazzo DNI :46700923
 Churquina Diego Sebastian DNI: 40394243
 */
 
---CREACION DE LA BASE DE DATOS Y LOS ESQUEMAS
-create database Com5600G04;
+--CREACION DE LA BASE DE DATOS
+if not exists (select * from sys.databases where name='Com5600G04')
+begin
+	create database Com5600G04;
+end
 go
+
 use Com5600G04;
 go
 
-create schema catalogo;
+--CREACION DE ESQUEMAS
+if not exists (select * from sys.schemas where name='catalogo')
+begin
+	exec('create schema catalogo');
+end
 go
-create schema ventasSucursal;
+
+if not exists (select * from sys.schemas where name='ventasSucursal')
+begin
+	exec('create schema ventasSucursal');
+end
 go
-CREATE SCHEMA SUCURSAL;
-GO
+
+if not exists (select * from sys.schemas where name ='SUCURSAL')
+begin
+	exec('CREATE SCHEMA SUCURSAL');
+end
+go
 
 --CREACION DE LAS TABLAS
-drop table catalogo.producto
-create table catalogo.producto(
-	id int primary key,
-	categoria varchar(50),
-	nombre varchar(100),
-	precio numeric(10, 2) check (precio > 0),
-	precio_referencia numeric(10, 2) check (precio_referencia > 0),
-	unidad_referencia varchar(10),
-	fecha smalldatetime
-);
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'catalogo' 
+                 AND TABLE_NAME = 'producto')
+BEGIN
+	create table catalogo.producto(
+		id int primary key,
+		categoria varchar(50),
+		nombre varchar(100),
+		precio numeric(10, 2) check (precio > 0),
+		precio_referencia numeric(10, 2) check (precio_referencia > 0),
+		unidad_referencia varchar(10),
+		fecha smalldatetime
+	);
+END
 go
 
-create table catalogo.accesorio_electronico(
-	id int identity(1,1) primary key,
-	producto varchar(50),
-	precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
-);
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'catalogo' 
+                 AND TABLE_NAME = 'accesorio_electronico')
+BEGIN
+	create table catalogo.accesorio_electronico(
+		id int identity(1,1) primary key,
+		producto varchar(50),
+		precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
+	);
+END
 go
 
-create table catalogo.producto_importado(
-	idProducto int primary key,
-	NombreProducto varchar(20),
-	Proveedor varchar(20),
-	Categoria varchar(20),
-	CantidadPorUnidad int CHECK (CANTIDADPORUNIDAD >= 0),
-	PrecioUnidad numeric (10, 2) check (precioUnidad > 0)
-);
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'catalogo' 
+                 AND TABLE_NAME = 'producto_importado')
+BEGIN
+	create table catalogo.producto_importado(
+		idProducto int primary key,
+		NombreProducto varchar(50),
+		Proveedor varchar(50),
+		Categoria varchar(30),
+		CantidadPorUnidad varchar(50),			--int CHECK (CANTIDADPORUNIDAD >= 0)
+		PrecioUnidad numeric (10, 2) check (precioUnidad > 0)
+	);
+END
 go
 
-create table SUCURSAL.sucursal(
-	id int identity(1,1) primary key,
-	ciudad varchar(50),
-	direccion varchar(100) unique,
-	horario varchar(50),
-	telefono char(15),
-	baja char(2) default 'NO',
-);
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'SUCURSAL' 
+                 AND TABLE_NAME = 'sucursal')
+BEGIN
+	create table SUCURSAL.sucursal(
+		id int identity(1,1) primary key,
+		ciudad varchar(50),
+		direccion varchar(100) unique,
+		horario varchar(50),
+		telefono char(15),
+		baja char(2) default 'NO',
+	);
+END
 go
 
-create table SUCURSAL.empleado(
-	legajoId int primary key,
-	nombre varchar(50),
-	apellido varchar(50),
-	dni char(9),
-	direccion varchar(100),
-	email_personal varchar(75),
-	email_empresarial varchar(75),
-	cuil char(12),
-	cargo varchar(20),
-	sucursal varchar(20),
-	turno varchar(20), 
-	baja char(2) default 'NO'
-);
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'SUCURSAL' 
+                 AND TABLE_NAME = 'empleado')
+BEGIN
+	create table SUCURSAL.empleado(
+		legajoId int primary key,
+		nombre varchar(50),
+		apellido varchar(50),
+		dni char(9),
+		direccion varchar(100),
+		email_personal varchar(75),
+		email_empresarial varchar(75),
+		cuil char(12),
+		cargo varchar(20),
+		sucursal varchar(20),
+		turno varchar(20), 
+		baja char(2) default 'NO'
+	);
+END
 go
 
-create table ventasSucursal.venta_registrada(
-	id_factura varchar(11) primary key ,
-	tipo_de_factura char(1),
-	ciudad varchar(20),
-	tipo_de_cliente varchar(10),
-	genero varchar(10),
-	producto varchar(100),
-	precio_unitario numeric(10, 2) check(precio_unitario >0),
-	cantidad smallint,
-	fecha date,
-	hora time,
-	medio_de_pago varchar(20),
-	empleado_id int,
-	identificador_de_pago varchar(50),
-	valida char(2) default 'si',
-	constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
-);
+--factura
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'ventaSucursal' 
+                 AND TABLE_NAME = 'venta_registrada')
+BEGIN
+	create table ventasSucursal.venta_registrada(
+		id_factura varchar(11) primary key ,
+		tipo_de_factura char(1),
+		ciudad varchar(20),
+		tipo_de_cliente varchar(10),
+		genero varchar(10),
+		producto varchar(100),
+		precio_unitario numeric(10, 2) check(precio_unitario >0),
+		cantidad smallint,
+		fecha date,
+		hora time,
+		medio_de_pago varchar(20),
+		empleado_id int,
+		identificador_de_pago varchar(50),
+		valida char(2) default 'si',
+		constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
+	);
+END
 go
