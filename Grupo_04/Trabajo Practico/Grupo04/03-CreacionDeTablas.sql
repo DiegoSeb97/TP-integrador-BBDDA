@@ -52,20 +52,21 @@ CREATE SCHEMA SUCURSAL;
 GO
 
 --CREACION DE LAS TABLAS
+drop table catalogo.producto
 create table catalogo.producto(
-	id int IDENTITY(1, 1) primary key,
-	categoria varchar(30),
-	nombre varchar(30),
+	id int primary key,
+	categoria varchar(50),
+	nombre varchar(100),
 	precio numeric(10, 2) check (precio > 0),
 	precio_referencia numeric(10, 2) check (precio_referencia > 0),
-	unidad_referencia varchar(5),
-	fecha date
+	unidad_referencia varchar(10),
+	fecha smalldatetime
 );
 go
 
 create table catalogo.accesorio_electronico(
 	id int identity(1,1) primary key,
-	producto varchar(20),
+	producto varchar(50),
 	precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
 );
 go
@@ -82,27 +83,27 @@ go
 
 create table SUCURSAL.sucursal(
 	id int identity(1,1) primary key,
-	ciudad varchar(20),
-	direccion varchar(70),
-	horario varchar(30),
+	ciudad varchar(50),
+	direccion varchar(100) unique,
+	horario varchar(50),
 	telefono char(15),
 	baja char(2) default 'NO',
 );
 go
 
 create table SUCURSAL.empleado(
-	legajoId int identity(1,1) primary key,
-	nombre varchar(20),
-	apellido varchar(20),
+	legajoId int primary key,
+	nombre varchar(50),
+	apellido varchar(50),
 	dni char(9),
 	direccion varchar(100),
-	email_personal varchar(50),
-	email_empresarial varchar(50),
+	email_personal varchar(75),
+	email_empresarial varchar(75),
 	cuil char(12),
 	cargo varchar(20),
 	sucursal varchar(20),
 	turno varchar(20), 
-	baja char(2) default 'NO',
+	baja char(2) default 'NO'
 );
 go
 
@@ -112,14 +113,14 @@ create table ventasSucursal.venta_registrada(
 	ciudad varchar(20),
 	tipo_de_cliente varchar(10),
 	genero varchar(10),
-	producto varchar(50),
-	precio_unitario float,
+	producto varchar(100),
+	precio_unitario numeric(10, 2) check(precio_unitario >0),
 	cantidad smallint,
 	fecha date,
 	hora time,
-	medio_de_pago varchar(10),
+	medio_de_pago varchar(20),
 	empleado_id int,
-	identificador_de_pago varchar(30),
+	identificador_de_pago varchar(50),
 	valida char(2) default 'si',
 	constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
 );
