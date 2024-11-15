@@ -130,7 +130,7 @@ BEGIN
 		direccion varchar(100) unique,
 		horario varchar(50),
 		telefono char(15),
-		baja char(2) default 'NO',
+		baja datetime default null,
 	);
 END
 go
@@ -153,7 +153,7 @@ BEGIN
 		cargo varchar(20),
 		sucursal varchar(20),
 		turno varchar(20), 
-		baja char(2) default 'NO'
+		baja datetime default null
 	);
 END
 go
@@ -178,7 +178,7 @@ BEGIN
 		medio_de_pago varchar(20),
 		empleado_id int,
 		identificador_de_pago varchar(50),
-		valida char(2) default 'si',
+		baja datetime default null,
 		constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
 	);
 END
@@ -192,10 +192,12 @@ IF NOT EXISTS (SELECT *
                  AND TABLE_NAME = 'factura')
 BEGIN
 	create table ventasSucursal.factura(
-		id_factura varchar(11) primary key,
+		id int identity(1, 1) primary key,
+		id_factura varchar(11),
 		cliente_id int,
 		fecha date,
-		estado varchar(20)		--pagada, pendiente
+		estado varchar(20),		--pagada, pendiente
+		detalle varchar(120) 
 	);
 END
 go
