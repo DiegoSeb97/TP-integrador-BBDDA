@@ -45,7 +45,6 @@ begin
 	create database Com5600G04;
 end
 go
-
 use Com5600G04;
 go
 
@@ -83,7 +82,7 @@ BEGIN
 		precio_referencia numeric(10, 2) check (precio_referencia > 0),
 		unidad_referencia varchar(10),
 		fecha smalldatetime
-	);
+	)
 END
 go
 
@@ -97,7 +96,7 @@ BEGIN
 		id int identity(1,1) primary key,
 		producto varchar(50),
 		precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
-	);
+	)
 END
 go
 
@@ -114,7 +113,7 @@ BEGIN
 		Categoria varchar(30),
 		CantidadPorUnidad varchar(50),			--int CHECK (CANTIDADPORUNIDAD >= 0)
 		PrecioUnidad numeric (10, 2) check (precioUnidad > 0)
-	);
+	)
 END
 go
 
@@ -131,7 +130,7 @@ BEGIN
 		horario varchar(50),
 		telefono char(15),
 		baja datetime default null,
-	);
+	)
 END
 go
 
@@ -154,7 +153,7 @@ BEGIN
 		sucursal varchar(20),
 		turno varchar(20), 
 		baja datetime default null
-	);
+	)
 END
 go
 
@@ -165,14 +164,14 @@ IF NOT EXISTS (SELECT *
                  AND TABLE_NAME = 'venta_registrada')
 BEGIN
 	create table ventasSucursal.venta_registrada(
-		id_factura varchar(11) primary key ,
+		id_factura int primary key ,
 		tipo_de_factura char(1),
 		ciudad varchar(20),
 		tipo_de_cliente varchar(10),
 		genero varchar(10),
 		producto varchar(100),
 		precio_unitario numeric(10, 2) check(precio_unitario >0),
-		cantidad smallint,
+		cantidad INT,
 		fecha date,
 		hora time,
 		medio_de_pago varchar(20),
@@ -180,7 +179,7 @@ BEGIN
 		identificador_de_pago varchar(50),
 		baja datetime default null,
 		constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
-	);
+	)
 END
 go
 
@@ -198,7 +197,7 @@ BEGIN
 		fecha date,
 		estado varchar(20),		--pagada, pendiente
 		detalle varchar(120) 
-	);
+	)
 END
 go
 
@@ -213,9 +212,9 @@ BEGIN
 		id_nc int identity(1,1) primary key,
 		cantidad int,
 		fecha date,
-		factura_id varchar(11),		--fk_factura
+		factura_id INT,		--fk_factura
 		producto_id int,			
-		constraint fk_factura foreign key (factura_id) references ventasSucursal.factura(id_factura)
+		constraint fk_factura foreign key (factura_id) references ventasSucursal.factura(id)
 	);
 END
 go
