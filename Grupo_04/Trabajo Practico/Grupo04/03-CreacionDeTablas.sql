@@ -141,6 +141,24 @@ BEGIN
 END
 go
 
+--TABLA FACTURA
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'ventasSucursal' 
+                 AND TABLE_NAME = 'factura')
+BEGIN
+	create table ventasSucursal.factura(
+		id int identity(1, 1) primary key,
+		id_factura varchar(11),
+		cliente_id int,
+		fecha date,
+		estado varchar(20),		--pagada, pendiente
+		tipo char(1),
+		baja datetime default null
+	)
+END
+go
+
 --TABLA VENTA REGISTRADA
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
@@ -167,23 +185,6 @@ BEGIN
 END
 go
 
-
---TABLA FACTURA
-IF NOT EXISTS (SELECT * 
-               FROM INFORMATION_SCHEMA.TABLES 
-               WHERE TABLE_SCHEMA = 'ventasSucursal' 
-                 AND TABLE_NAME = 'factura')
-BEGIN
-	create table ventasSucursal.factura(
-		id int identity(1, 1) primary key,
-		id_factura varchar(11),
-		cliente_id int,
-		fecha date,
-		estado varchar(20),		--pagada, pendiente
-		tipo char(1)
-	)
-END
-go
 
 
 --TABLA DETALLE
