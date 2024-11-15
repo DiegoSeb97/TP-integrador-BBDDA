@@ -14,6 +14,7 @@ GO
 
 /*
 --NECESARIO PARA PODER IMPORTAR DESDE XLSX
+
 USE [master] 
 GO 
 EXEC master.dbo.sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1 
@@ -35,7 +36,7 @@ begin
 	insert into #accesoriosTemp(prod, precio)
 	SELECT *
 	FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
-		'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Productos\Electronic_accessories.xlsx',
+		'Excel 12.0;HDR=Yes;Database=C:\BBDDA\Electronic accessories.xlsx;',
 		'select * from [Sheet1$]');
 	--insersion de datos de la tabla temp en la tabla accesorio_electronico
 	insert into catalogo.accesorio_electronico (producto, precioUnitUsd)
