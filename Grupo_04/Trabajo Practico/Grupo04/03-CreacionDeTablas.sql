@@ -81,7 +81,7 @@ BEGIN
 		precio numeric(10, 2) check (precio > 0),
 		precio_referencia numeric(10, 2) check (precio_referencia > 0),
 		unidad_referencia varchar(10),
-		fecha smalldatetime
+		fecha datetime
 	)
 END
 go
