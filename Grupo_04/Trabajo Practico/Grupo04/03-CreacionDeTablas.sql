@@ -81,38 +81,9 @@ BEGIN
 		precio numeric(10, 2) check (precio > 0),
 		precio_referencia numeric(10, 2) check (precio_referencia > 0),
 		unidad_referencia varchar(10),
-		fecha datetime
-	)
-END
-go
-
---TABLA ACCESORIO ELECTRONICO
-IF NOT EXISTS (SELECT * 
-               FROM INFORMATION_SCHEMA.TABLES 
-               WHERE TABLE_SCHEMA = 'catalogo' 
-                 AND TABLE_NAME = 'accesorio_electronico')
-BEGIN
-	create table catalogo.accesorio_electronico(
-		id int identity(1,1) primary key,
-		producto varchar(50),
-		precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
-	)
-END
-go
-
---TABLA PRODUCTO IMPORTADO
-IF NOT EXISTS (SELECT * 
-               FROM INFORMATION_SCHEMA.TABLES 
-               WHERE TABLE_SCHEMA = 'catalogo' 
-                 AND TABLE_NAME = 'producto_importado')
-BEGIN
-	create table catalogo.producto_importado(
-		idProducto int primary key,
-		NombreProducto varchar(50),
-		Proveedor varchar(50),
-		Categoria varchar(30),
-		CantidadPorUnidad varchar(50),			--int CHECK (CANTIDADPORUNIDAD >= 0)
-		PrecioUnidad numeric (10, 2) check (precioUnidad > 0)
+		fecha datetime,
+		precioUsd numeric(10, 2),
+		proveedor varchar(50)
 	)
 END
 go
@@ -150,10 +121,23 @@ BEGIN
 		email_empresarial varchar(75),
 		cuil char(12),
 		cargo varchar(20),
-		sucursal varchar(20),
+		sucursal int foreign key references sucursal.sucursal(id),
 		turno varchar(20), 
 		baja datetime default null
 	)
+END
+go
+
+--TABLA MEDIO DE PAGO
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'ventasSucursal' 
+                 AND TABLE_NAME = 'medio_pago')
+BEGIN
+	create table ventasSucursal.medio_pago(
+		id int identity(1, 1) primary key,
+		medio_pago varchar(30)
+	);
 END
 go
 
@@ -164,8 +148,8 @@ IF NOT EXISTS (SELECT *
                  AND TABLE_NAME = 'venta_registrada')
 BEGIN
 	create table ventasSucursal.venta_registrada(
-		id_factura int primary key ,
-		tipo_de_factura char(1),
+		id int identity(1, 1) primary key,
+		id_factura int foreign key references ventasSucursal.factura(id),
 		ciudad varchar(20),
 		tipo_de_cliente varchar(10),
 		genero varchar(10),
@@ -174,9 +158,9 @@ BEGIN
 		cantidad INT,
 		fecha date,
 		hora time,
-		medio_de_pago varchar(20),
 		empleado_id int,
 		identificador_de_pago varchar(50),
+		medio_pago int foreign key references ventassucursal.medio_pago(id),
 		baja datetime default null,
 		constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
 	)
@@ -196,25 +180,25 @@ BEGIN
 		cliente_id int,
 		fecha date,
 		estado varchar(20),		--pagada, pendiente
-		detalle varchar(120) 
+		tipo char(1)
 	)
 END
 go
 
 
---TABLA NOTA DE CREDITO
+--TABLA DETALLE
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
                WHERE TABLE_SCHEMA = 'ventasSucursal' 
-                 AND TABLE_NAME = 'nota_credito')
+                 AND TABLE_NAME = 'detalle')
 BEGIN
-	create table ventasSucursal.nota_credito(
-		id_nc int identity(1,1) primary key,
-		cantidad int,
-		fecha date,
-		factura_id INT,		--fk_factura
-		producto_id int,			
-		constraint fk_factura foreign key (factura_id) references ventasSucursal.factura(id)
+	create table ventasSucursal.detalle(
+		id int identity(1, 1) primary key,
+		cantidadProd int,
+		precio numeric(10, 2),
+		subTotal numeric(11, 2), 
+		id_prod int foreign key references catalogo.producto(id),
+		id_fact int foreign key references ventassucursal.factura(id)
 	);
 END
 go
