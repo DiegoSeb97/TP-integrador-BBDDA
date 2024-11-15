@@ -1,4 +1,4 @@
---IMPORTACION DE DATOS
+--------------------------------IMPORTACION DE DATOS-----------------------------------
 use Com5600G04;
 go
 
@@ -49,6 +49,7 @@ go
 --Productos_importados.xlsx
 CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_IMPORTADOS_XLSX AS
 begin
+	--creo tabla temporal
 	create table #prod_imp_temp(
 		idProd int,
 		NombreProducto varchar(50),
@@ -57,20 +58,21 @@ begin
 		CantidadPorUnidad varchar(50),
 		PrecioUnidad varchar(30)
 	);
-
+	
+	--inserto en tabla temporal
 	insert into #prod_imp_temp 
 	SELECT *
 	FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
 		'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Productos\Productos_importados.xlsx',
 		'select * from [Listado de productos$]');
 	
+	--inserto desde tabla temporal en la tabla destino
 	insert into catalogo.producto_importado
 	select idProd, NombreProducto, Proveedor, Categoria, CantidadPorUnidad, 
 		cast(PrecioUnidad as numeric(10,2))
 	from #prod_imp_temp;
-
-	--select * from catalogo.producto_importado
-	--select * from #prod_imp_temp;
+	
+	--elimino la tabla temporal
 	drop table #prod_imp_temp;
 end
 go
@@ -78,6 +80,7 @@ go
 --tabla sucursal desde informacion_complementaria.xlsx
 CREATE OR ALTER PROCEDURE SUCURSAL.CARGAR_SUCURSALES_XLSX AS
 begin
+	--creo tabla temporal
 	create table #sucursal_temp(
 		ciudad varchar(50),
 		direccion varchar(100),
@@ -85,16 +88,19 @@ begin
 		telefono varchar(15),
 	);
 
+	--inserto en tabla temporal
 	insert into #sucursal_temp (ciudad, direccion, horario, telefono)
 	SELECT *
 	FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
 		'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Informacion_complementaria.xlsx',
 		'select [Reemplazar por],direccion,horario,telefono from [sucursal$]');
 
+	--inserto desde tabla temporal en la tabla destino
 	insert into SUCURSAL.sucursal (ciudad, direccion, horario, telefono)
 	select *
 	from #sucursal_temp;
 
+	--elimino la tabla temporal
 	drop table #sucursal_temp;
 end
 go
@@ -102,6 +108,7 @@ go
 --tabla empleado desde informacion_complementaria.xlsx
 create or alter procedure SUCURSAL.CARGAR_EMPLEADOS_XLSX as
 begin
+	--creo tabla temporal
 	create table #empl_temp(
 		legajoId int,
 		nombre varchar(50),
@@ -115,6 +122,8 @@ begin
 		sucursal varchar(20),
 		turno varchar(20)
 	);
+
+	--inserto datos en tabla temporal
 	insert into #empl_temp
 	SELECT *
 	FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
@@ -122,7 +131,9 @@ begin
 		'select [Legajo/ID],Nombre,Apellido,DNI,Direccion,[email personal],
 		[email empresa],Cuil,Cargo,Sucursal,Turno from [Empleados$]');
 	
-	--elimino tabulaciones de los campos
+	--elimino tabulaciones de los campos email_personal, empresarial, nombre y apellido
+	--char(9) = \t
+	--para emails reemplazo con caracter vacio, para nombre y apellido reemplazo con un espacio en blanco
 	UPDATE #empl_temp
 	SET email_personal = REPLACE(email_personal, CHAR(9), '')
 	WHERE email_personal LIKE '%' + CHAR(9) + '%';
@@ -139,17 +150,17 @@ begin
 	SET apellido = REPLACE(apellido, CHAR(9), ' ')
 	WHERE apellido LIKE '%' + CHAR(9) + '%';
 
-	--elimino registros vacios
+	--elimino registros vacios, aquellos empleados que lleguen con id nulo
 	delete from #empl_temp where legajoId is null;
-	--inserto en tabla empleado
+
+	--inserto en tabla empleado desde tabla temporal
 	insert into SUCURSAL.empleado(legajoId, nombre, apellido, dni, 
 		direccion, email_personal, email_empresarial,
 		cuil, cargo, sucursal, turno)
 	select * 
 	from #empl_temp;
 
-	--select * from #empl_temp;
-	--select * from SUCURSAL.empleado;
+	--elimino la tabla temporal
 	drop table #empl_temp;
 end
 go
@@ -157,6 +168,7 @@ go
 --inserto desde catalogo.csv en tabla producto
 CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_CSV AS
 begin
+	--creo tabla temporal
 	create table #productos_temp(
 		id int,
 		categoria varchar(50),
@@ -167,6 +179,7 @@ begin
 		fecha varchar(50)
 	);
 
+	--inserto en tabla temporal
 	BULK INSERT #productos_temp 
 	FROM 'D:\datosTpBDA\TP_integrador_Archivos\Productos\catalogo.csv'
 	   WITH (
@@ -177,11 +190,13 @@ begin
 		  codepage = '65001',		--para poder leer caracteres especiales
 		  FORMAT = 'CSV');
 
+	--desde tabla temporal inserto en la tabla producto
 	insert into catalogo.producto
 	select id, categoria, nombre, cast(precio as numeric(10,2)), 
 		cast(precio_referencia as numeric(10,2)), unidad_referencia, cast(fecha as smalldatetime)
 	from #productos_temp
 
+	--elimino tabla temporal
 	drop table #productos_temp;
 end
 go
@@ -190,6 +205,7 @@ go
 --inserto desde ventas_registradas.csv en tabla ventas registradas
 CREATE OR ALTER PROCEDURE VENTASSUCURSAL.CARGAR_VENTAS_REGISTRADAS_CSV AS
 begin
+	--creo tabla temporal
 	create table #ventas_temp(
 		id_factura varchar(50),
 		tipo_de_factura char(1),
@@ -206,6 +222,7 @@ begin
 		identificador_de_pago varchar(50)
 	);
 
+	--inserto en tabla temporal
 	BULK INSERT #ventas_temp 
 	FROM 'D:\datosTpBDA\TP_integrador_Archivos\Ventas_registradas.csv'
 	   WITH (
@@ -214,6 +231,7 @@ begin
 		  firstrow = 2,				--primera linea de datos
 		  codepage = '65001');		--para poder leer caracteres especiales
 	
+	--inserto en tabla desde tabla temporal
 	insert into ventasSucursal.venta_registrada(id_factura, tipo_de_factura, ciudad,
 	tipo_de_cliente, genero, producto, precio_unitario, cantidad, fecha, hora, medio_de_pago,
 	empleado_id, identificador_de_pago)
@@ -223,7 +241,7 @@ begin
 		identificador_de_pago
 	from #ventas_temp;
 
-	--select * from #ventas_temp;
-	--select * from ventasSucursal.venta_registrada;
+	--elimino tabla temporal
 	drop table #ventas_temp;
 end
+

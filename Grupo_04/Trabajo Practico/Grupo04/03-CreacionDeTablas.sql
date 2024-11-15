@@ -38,7 +38,8 @@ Ezequiel Muñoz Palazzo DNI :46700923
 Churquina Diego Sebastian DNI: 40394243
 */
 
---CREACION DE LA BASE DE DATOS
+-----------------------------CREACION DE LA BASE DE DATOS---------------------------------
+
 if not exists (select * from sys.databases where name='Com5600G04')
 begin
 	create database Com5600G04;
@@ -48,7 +49,7 @@ go
 use Com5600G04;
 go
 
---CREACION DE ESQUEMAS
+--------------------------------CREACION DE ESQUEMAS--------------------------------------
 if not exists (select * from sys.schemas where name='catalogo')
 begin
 	exec('create schema catalogo');
@@ -67,7 +68,8 @@ begin
 end
 go
 
---CREACION DE LAS TABLAS
+---------------------------------CREACION DE LAS TABLAS----------------------------------
+--TABLA PRODUCTO
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
                WHERE TABLE_SCHEMA = 'catalogo' 
@@ -85,6 +87,7 @@ BEGIN
 END
 go
 
+--TABLA ACCESORIO ELECTRONICO
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
                WHERE TABLE_SCHEMA = 'catalogo' 
@@ -98,6 +101,7 @@ BEGIN
 END
 go
 
+--TABLA PRODUCTO IMPORTADO
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
                WHERE TABLE_SCHEMA = 'catalogo' 
@@ -114,6 +118,7 @@ BEGIN
 END
 go
 
+--TABLA SUCURSAL
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
                WHERE TABLE_SCHEMA = 'SUCURSAL' 
@@ -130,6 +135,7 @@ BEGIN
 END
 go
 
+--TABLA EMPLEADO
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
                WHERE TABLE_SCHEMA = 'SUCURSAL' 
@@ -152,10 +158,10 @@ BEGIN
 END
 go
 
---factura
+--TABLA VENTA REGISTRADA
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
-               WHERE TABLE_SCHEMA = 'ventaSucursal' 
+               WHERE TABLE_SCHEMA = 'ventasSucursal' 
                  AND TABLE_NAME = 'venta_registrada')
 BEGIN
 	create table ventasSucursal.venta_registrada(
@@ -174,6 +180,40 @@ BEGIN
 		identificador_de_pago varchar(50),
 		valida char(2) default 'si',
 		constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
+	);
+END
+go
+
+
+--TABLA FACTURA
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'ventasSucursal' 
+                 AND TABLE_NAME = 'factura')
+BEGIN
+	create table ventasSucursal.factura(
+		id_factura varchar(11) primary key,
+		cliente_id int,
+		fecha date,
+		estado varchar(20)		--pagada, pendiente
+	);
+END
+go
+
+
+--TABLA NOTA DE CREDITO
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'ventasSucursal' 
+                 AND TABLE_NAME = 'nota_credito')
+BEGIN
+	create table ventasSucursal.nota_credito(
+		id_nc int identity(1,1) primary key,
+		cantidad int,
+		fecha date,
+		factura_id varchar(11),		--fk_factura
+		producto_id int,			
+		constraint fk_factura foreign key (factura_id) references ventasSucursal.factura(id_factura)
 	);
 END
 go
