@@ -19,35 +19,36 @@ GO
 */
 --inserto desde archivo excel en tabla accesorio_electronico
 --la ruta del archivo puede variar
-insert into catalogo.accesorio_electronico (producto, precioUnitUsd)
-SELECT *
-FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
-    'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Productos\Electronic_accessories.xlsx',
-	'select * from [Sheet1$]');
-
-select * from catalogo.accesorio_electronico;
+CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_ACCESORIOS_ELECTRONICOS_XLSX AS
+begin
+	insert into catalogo.accesorio_electronico (producto, precioUnitUsd)
+	SELECT *
+	FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
+		'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Productos\Electronic_accessories.xlsx',
+		'select * from [Sheet1$]');
+end
 
 --Productos_importados.xlsx
-insert into catalogo.producto_importado 
-SELECT *
-FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
-    'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Productos\Productos_importados.xlsx',
-	'select * from [Listado de productos$]');
-
-select * from catalogo.producto_importado;
-
-
+GO
+CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_IMPORTADOS_XLSX AS
+begin
+	insert into catalogo.producto_importado 
+	SELECT *
+	FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
+		'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Productos\Productos_importados.xlsx',
+		'select * from [Listado de productos$]');
+end
 
 --tabla sucursal desde informacion_complementaria.xlsx
-insert into SUCURSAL.sucursal (ciudad, direccion, horario, telefono)
-SELECT *
-FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
-    'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Informacion_complementaria.xlsx',
-	'select [Reemplazar por],direccion,horario,telefono from [sucursal$]');
-
-select * from SUCURSAL.sucursal;
-
-
+GO
+CREATE OR ALTER PROCEDURE SUCURSAL.CARGAR_SUCURSALES_XLSX AS
+begin
+	insert into SUCURSAL.sucursal (ciudad, direccion, horario, telefono)
+	SELECT *
+	FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
+		'Excel 12.0; Database=D:\datosTpBDA\TP_integrador_Archivos\Informacion_complementaria.xlsx',
+		'select [Reemplazar por],direccion,horario,telefono from [sucursal$]')
+end
 
 --tabla empleado desde informacion_complementaria.xlsx
 --la primer fila esta vacia, por lo tanto necesito evitarla
@@ -65,28 +66,29 @@ FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
 --inserto desde catalogo.csv en tabla producto
 --hay campos con comas por dentro, hay lineas que se cargan mal
 --por ejemplo la linea 127, esto se ve al realizar select * de la tabla cargada
-BULK INSERT catalogo.producto 
-FROM 'D:\datosTpBDA\TP_integrador_Archivos\Productos\catalogo.csv'
-   WITH (
-      FIELDTERMINATOR = ',',	--caracter delimitador
-      ROWTERMINATOR = '0x0a',	--10 en hexadecimal, salto de linea
-	  firstrow = 2,				--primera linea de datos
-	  codepage = '65001'		--para poder leer caracteres especiales
-);
 GO
-
-select * from catalogo.producto;
-
+CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_CSV AS
+begin
+	BULK INSERT catalogo.producto 
+	FROM 'D:\datosTpBDA\TP_integrador_Archivos\Productos\catalogo.csv'
+	   WITH (
+		  FIELDTERMINATOR = ',',	--caracter delimitador
+		  ROWTERMINATOR = '0x0a',	--10 en hexadecimal, salto de linea
+		  FIELDQUOTE = '"',
+		  firstrow = 2,				--primera linea de datos
+		  codepage = '65001',		--para poder leer caracteres especiales
+		  FORMAT = 'CSV');
+end
 
 --inserto desde ventas_registradas.csv en tabla ventas registradas
-BULK INSERT ventasSucursal.venta_registrada 
-FROM 'D:\datosTpBDA\TP_integrador_Archivos\Ventas_registradas.csv'
-   WITH (
-      FIELDTERMINATOR = ';',	--caracter delimitador
-      ROWTERMINATOR = '0x0a',	--10 en hexadecimal, salto de linea
-	  firstrow = 2,				--primera linea de datos
-	  codepage = '65001'		--para poder leer caracteres especiales
-);
 GO
-
-select * from ventasSucursal.venta_registrada;
+CREATE OR ALTER PROCEDURE VENTASSUCURSAL.CARGAR_VENTAS_REGISTRADAS_CSV AS
+begin
+	BULK INSERT ventasSucursal.venta_registrada 
+	FROM 'D:\datosTpBDA\TP_integrador_Archivos\Ventas_registradas.csv'
+	   WITH (
+		  FIELDTERMINATOR = ';',	--caracter delimitador
+		  ROWTERMINATOR = '0x0a',	--10 en hexadecimal, salto de linea
+		  firstrow = 2,				--primera linea de datos
+		  codepage = '65001');		--para poder leer caracteres especiales
+end

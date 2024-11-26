@@ -1,0 +1,3 @@
+--ENCRIPTACION DE DATOS
+use Com5600G04;
+go

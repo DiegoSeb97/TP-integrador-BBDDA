@@ -33,137 +33,101 @@ Churquina Diego Sebastián DNI: 40394243
 
 --CREACIÓN DE LA BASE DE DATOS Y LOS ESQUEMAS
 create database Com5600G04;
+*/
 use Com5600G04;
-go;*/
-
-create schema catalogo;
-go;
-create schema ventasSucursal;
-go;
-CREATE SCHEMA SUCURSAL;
-GO;
-
---CREACIÓN DE LAS TABLAS
-/*
---id int identity(1,1) primary key
-create table catalogo.producto(
-id int identity(1,1) primary key,
-categoria varchar(30),
-nombre varchar(30),
-precio numeric(10, 2) check (precio > 0),
-precio_referencia numeric(10, 2) check (precio_referencia > 0),
-unidad_referencia varchar(5),
-fecha date
-);
-*/
--------------------------------------------
---test tabla producto
-drop table catalogo.producto;
-create table catalogo.producto(
-id varchar(100),
-categoria varchar(100),
-nombre varchar(100),
-precio varchar(100),
-precio_referencia varchar(100),
-unidad_referencia varchar(100),
-fecha varchar(100)
-);
-----------------------------------------
-
-/*
-create table catalogo.accesorio_electronico(
-id int identity(1,1) primary key,
-producto varchar(20),
-precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
-);
-*/
-
---test tabla accesorio electronico
-drop table catalogo.accesorio_electronico;
-create table catalogo.accesorio_electronico(
-id int identity(1,1) primary key,
-producto varchar(100),
-precioUnitUsd varchar(100)
-);
-
-drop table catalogo.producto_importado;
-create table catalogo.producto_importado(
-idProducto int primary key,
-NombreProducto varchar(50),
-Proveedor varchar(50),
-Categoria varchar(20),
-CantidadPorUnidad varchar(100),
-PrecioUnidad numeric (10, 2) check (precioUnidad > 0)
-);
-
-drop table SUCURSAL.sucursal;
-create table SUCURSAL.sucursal(
-id int identity(1,1) primary key,
-ciudad varchar(20),
-direccion varchar(100),
-horario varchar(50),
-telefono varchar(15),
-baja char(2) default 'NO',
-);
-
-drop table SUCURSAL.empleado;
-create table SUCURSAL.empleado(
-legajoId int primary key,
-nombre varchar(30),
-apellido varchar(20),
-dni varchar(15),
-direccion varchar(100),
-email_personal varchar(100),
-email_empresarial varchar(100),
-cuil char(12),
-cargo varchar(30),
-sucursal varchar(30),
-turno varchar(30), 
-baja char(2) default 'NO',
-);
-
-/*
-create table ventasSucursal.venta_registrada(
-id_factura varchar(11) primary key ,
-tipo_de_factura char(1),
-ciudad varchar(20),
-tipo_de_cliente varchar(10),
-genero varchar(10),
-producto varchar(50),
-precio_unitario float,
-cantidad smallint,
-fecha date,
-hora time,
-medio_de_pago varchar(10),
-empleado_id int,
-identificador_de_pago varchar(30),
-valida char(2) default 'si',--!!
-constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
-);
-GO;
-*/
-/******************************************/
---test tabla venta_registrada
-drop table ventasSucursal.venta_registrada;
-create table ventasSucursal.venta_registrada(
-id_factura varchar(11) primary key ,
-tipo_de_factura char(1),
-ciudad varchar(200),
-tipo_de_cliente varchar(100),
-genero varchar(100),
-producto varchar(100),
-precio_unitario varchar(500),
-cantidad smallint,
-fecha date,
-hora time,
-medio_de_pago varchar(50),
-empleado_id int,
-identificador_de_pago varchar(100),
-constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
-);
 go
 
-/******************************************/
+create schema catalogo;
+go
+create schema ventasSucursal;
+go
+CREATE SCHEMA SUCURSAL;
+GO
+
+--CREACIÓN DE LAS TABLAS
+create or alter procedure catalogo.crear_tabla_producto as
+begin
+	create table catalogo.producto(
+	id int primary key,
+	categoria varchar(100),
+	nombre varchar(100),
+	precio varchar(50),
+	precio_referencia varchar(50),
+	unidad_referencia varchar(50),
+	fecha date);
+end
+go
+create or alter procedure catalogo.crear_tabla_accesorio_electronico as
+begin
+	create table catalogo.accesorio_electronico(
+	id int identity(1,1) primary key,
+	producto varchar(100),
+	precioUnitUsd numeric(10, 2) check (precioUnitUsd > 0)
+	);
+end
+go
+create or alter procedure catalogo.crear_tabla_producto_importado as
+begin
+	create table catalogo.producto_importado(
+	idProducto int primary key,
+	NombreProducto varchar(100),
+	Proveedor varchar(100),
+	Categoria varchar(50),
+	CantidadPorUnidad varchar(50),
+	PrecioUnidad numeric (10, 2) check (precioUnidad > 0)
+	);
+end
+go
+create or alter procedure SUCURSAL.crear_tabla_sucursal as
+begin
+	create table SUCURSAL.sucursal(
+	id int identity(1,1) primary key,
+	ciudad varchar(50),
+	direccion varchar(100) unique,
+	horario varchar(50),
+	telefono char(15),
+	baja char(2) default 'NO',
+	);
+end
+go
+create or alter procedure SUCURSAL.crear_tabla_empleado as
+begin
+	create table SUCURSAL.empleado(
+	legajoId int identity(1,1) primary key,
+	nombre varchar(20),
+	apellido varchar(20),
+	dni char(9),
+	direccion varchar(100),
+	email_personal varchar(50),
+	email_empresarial varchar(50),
+	cuil char(12),
+	cargo varchar(20),
+	sucursal varchar(20),
+	turno varchar(20), 
+	baja char(2) default 'NO',
+	);
+end
+go
+create or alter procedure ventasSucursal.crear_tabla_ventas_registradas as
+begin
+	create table ventasSucursal.venta_registrada(
+	id_factura varchar(11) primary key ,
+	tipo_de_factura char(1),
+	ciudad varchar(50),
+	tipo_de_cliente varchar(50),
+	genero varchar(20),
+	producto varchar(100),
+	precio_unitario float,
+	cantidad smallint,
+	fecha date,
+	hora time,
+	medio_de_pago varchar(50),
+	empleado_id int,
+	identificador_de_pago varchar(50),
+	constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
+	);
+end
+GO
 
 --stored procedures
 /*
