@@ -75,9 +75,10 @@ IF NOT EXISTS (SELECT *
                  AND TABLE_NAME = 'producto')
 BEGIN
 	create table catalogo.producto(
-		id int primary key,
+		id int identity(1, 1) primary key,
 		categoria varchar(50),
 		nombre varchar(100),
+		cantPorUnidad varchar(25),
 		precio numeric(10, 2) check (precio > 0),
 		precio_referencia numeric(10, 2) check (precio_referencia > 0),
 		unidad_referencia varchar(10),
@@ -112,10 +113,10 @@ IF NOT EXISTS (SELECT *
                  AND TABLE_NAME = 'empleado')
 BEGIN
 	create table SUCURSAL.empleado(
-		legajoId int primary key,
+		legajoId int identity(1, 1) primary key,
 		nombre varchar(50),
 		apellido varchar(50),
-		dni char(9),
+		dni int,
 		direccion varchar(100),
 		email_personal varchar(75),
 		email_empresarial varchar(75),
@@ -141,7 +142,24 @@ BEGIN
 END
 go
 
+--TABLA CLIENTE
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'ventasSucursal' 
+                 AND TABLE_NAME = 'cliente')
+BEGIN
+	create table ventasSucursal.cliente(
+		id int identity(1, 1) primary key,
+		dni int,
+		tipo varchar(15),
+		genero char(1),
+		baja datetime default NULL
+	)
+END
+go
 --TABLA FACTURA
+--ENTENDEMOS QUE EL ID DE LA FACTURA LLEGA A LA BASE DE DATOS DESDE UN SISTEMA DE FACTURACIÓN QUE GENERA LA FACTURA, DADO QUE LA GENERACIÓN DE FACTURAS DIGITALES ESTÁ, COMO INDICA LA 
+--CONSIGNA, FUERA DE ALCANCE DEL PROYECTO, POR LO QUE NO GENERAMOS LOS ID'S DE LAS FACTURAS, ESPERAMOS RECIBIRLAS
 IF NOT EXISTS (SELECT * 
                FROM INFORMATION_SCHEMA.TABLES 
                WHERE TABLE_SCHEMA = 'ventasSucursal' 
@@ -149,15 +167,36 @@ IF NOT EXISTS (SELECT *
 BEGIN
 	create table ventasSucursal.factura(
 		id int identity(1, 1) primary key,
-		id_factura varchar(11),
-		cliente_id int,
+		id_factura char(11),
+		cliente_id int FOREIGN KEY REFERENCES VENTASSUCURSAL.CLIENTE(ID),
 		fecha date,
 		estado varchar(20),		--pagada, pendiente
 		tipo char(1),
+		total numeric(11, 2) check (total > 0),
+		totalIva numeric(11, 2) check(totalIva > 0),
 		baja datetime default null
 	)
 END
 go
+
+--TABLA DETALLE
+IF NOT EXISTS (SELECT * 
+               FROM INFORMATION_SCHEMA.TABLES 
+               WHERE TABLE_SCHEMA = 'ventasSucursal' 
+                 AND TABLE_NAME = 'detalle')
+BEGIN
+	create table ventasSucursal.detalle(
+		id int identity(1, 1) primary key,
+		id_fact int foreign key references ventasSucursal.factura(id),
+		cantidadProd int,
+		precio numeric(10, 2),
+		subTotal numeric(11, 2), 
+		id_prod int foreign key references catalogo.producto(id)
+	);
+END
+go
+
+
 
 --TABLA VENTA REGISTRADA
 IF NOT EXISTS (SELECT * 
@@ -169,37 +208,12 @@ BEGIN
 		id int identity(1, 1) primary key,
 		id_factura int foreign key references ventasSucursal.factura(id),
 		ciudad varchar(20),
-		tipo_de_cliente varchar(10),
-		genero varchar(10),
-		producto varchar(100),
-		precio_unitario numeric(10, 2) check(precio_unitario >0),
-		cantidad INT,
 		fecha date,
 		hora time,
 		empleado_id int,
-		identificador_de_pago varchar(50),
 		medio_pago int foreign key references ventassucursal.medio_pago(id),
 		baja datetime default null,
 		constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
 	)
-END
-go
-
-
-
---TABLA DETALLE
-IF NOT EXISTS (SELECT * 
-               FROM INFORMATION_SCHEMA.TABLES 
-               WHERE TABLE_SCHEMA = 'ventasSucursal' 
-                 AND TABLE_NAME = 'detalle')
-BEGIN
-	create table ventasSucursal.detalle(
-		id int identity(1, 1) primary key,
-		cantidadProd int,
-		precio numeric(10, 2),
-		subTotal numeric(11, 2), 
-		id_prod int foreign key references catalogo.producto(id),
-		id_fact int foreign key references ventassucursal.factura(id)
-	);
 END
 go
