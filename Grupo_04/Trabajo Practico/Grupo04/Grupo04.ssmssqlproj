@@ -43,6 +43,12 @@
           <AssociatedConnUserName />
           <FullPath>03-Procedimientos.sql</FullPath>
         </FileNode>
+        <FileNode Name="03-Testing.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-8R0MPT8\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-8R0MPT8\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>03-Testing.sql</FullPath>
+        </FileNode>
         <FileNode Name="04-ImportarDatos.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-8HAA721\SQLEXPRESS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>DESKTOP-8HAA721\SQLEXPRESS</AssociatedConnSrvName>
