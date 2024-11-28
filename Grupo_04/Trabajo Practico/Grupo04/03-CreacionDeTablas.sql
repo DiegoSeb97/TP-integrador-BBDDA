@@ -83,7 +83,8 @@ BEGIN
 		unidad_referencia varchar(10),
 		fecha datetime,
 		precioUsd numeric(10, 2),
-		proveedor varchar(50)
+		proveedor varchar(50),
+		cantXunidad varchar(50)
 	)
 END
 go

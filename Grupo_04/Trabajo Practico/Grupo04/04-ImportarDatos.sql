@@ -12,9 +12,9 @@ RECONFIGURE;
 GO
 */
 
-/*
---NECESARIO PARA PODER IMPORTAR DESDE XLSX
 
+--NECESARIO PARA PODER IMPORTAR DESDE XLSX
+/*
 USE [master] 
 GO 
 EXEC master.dbo.sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1 
@@ -23,34 +23,93 @@ EXEC master.dbo.sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParame
 GO 
 */
 
---inserto desde archivo excel en tabla accesorio_electronico
---la ruta del archivo puede variar, mandar como parametro
-CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_ACCESORIOS_ELECTRONICOS_XLSX (@RUTA VARCHAR(75)) AS
+
+--inserto desde catalogo.csv en tabla producto
+CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_CSV @RUTA NVARCHAR(255) AS
+begin
+	--creo tabla temporal
+	create table #productos_temp(
+		id VARCHAR(15),
+		categoria varchar(50),
+		nombre varchar(100),
+		precio varchar(50),
+		precio_referencia varchar(50),
+		unidad_referencia varchar(10),
+		fecha varchar(50)
+	);
+	
+	DECLARE @CONSULTA NVARCHAR(max)
+	SET @CONSULTA = 'BULK INSERT #productos_temp 
+	FROM ''' + @RUTA + '''
+	   WITH (
+		  FIELDTERMINATOR = '','',	
+		  ROWTERMINATOR = ''0x0a'',	
+		  FIELDQUOTE = ''"'',
+		  firstrow = 2,			
+		  codepage = ''65001'',		
+		  FORMAT = ''CSV'');';
+	--inserto en tabla temporal
+	EXEC SP_EXECUTESQL @CONSULTA
+
+	--desde tabla temporal inserto en la tabla producto
+	insert into catalogo.producto (id, categoria, nombre, precio, precio_referencia,
+	unidad_referencia, fecha)
+	select cast(id as int), categoria, nombre, cast(precio as numeric(10,2)), 
+		cast(precio_referencia as numeric(10,2)), unidad_referencia, 
+		cast(fecha as datetime)
+	from #productos_temp
+	/*
+	insert into catalogo.producto
+	select cast(id as int), categoria, nombre, cast(precio as numeric(10,2)), 
+		cast(precio_referencia as numeric(10,2)), unidad_referencia, cast(fecha as smalldatetime)
+	from #productos_temp
+	*/
+	--elimino tabla temporal
+	drop table #productos_temp;
+end
+go
+
+
+--inserto desde accesorios_electronicos en tabla productos
+CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_ACCESORIOS_ELECTRONICOS_XLSX (@RUTA NVARCHAR(255)) AS
 begin
 	--creacion de tabla temp
 	create table #accesoriosTemp(
 		prod varchar(50),
 		precio varchar(50)
 	);
-	DECLARE @CONSULTA VARCHAR(250)
-	SET @CONSULTA = 'insert into #accesoriosTemp(prod, precio)
-	SELECT *
-	FROM OPENROWSET("Microsoft.ACE.OLEDB.12.0",
-		"Excel 12.0;HDR=Yes;Database="' + @RUTA + ';' + ',
-		"select * from [Sheet1$]");'
+	insert into #accesoriosTemp (prod, precio)
+	select * 
+	from openrowset('Microsoft.ACE.OLEDB.12.0',
+                    'Excel 12.0;HDR=Yes;Database=C:\Users\SAJD\Desktop\tp-bda\tp_bdaProductosCsv\TP_integrador_Archivos\Productos\Electronic_accessories.xlsx;',
+                    'SELECT * FROM [Sheet1$]');
+	/*
+	DECLARE @CONSULTA NVARCHAR(max)
+	SET @CONSULTA = 
+	'insert into #accesoriosTemp(prod, precio)
+    SELECT *
+	FROM OPENROWSET(''Microsoft.ACE.OLEDB.12.0'','+
+	'''Excel 12.0;HDR=Yes;Database='+@RUTA+';'','+'''select * from [Sheet1$]'');';
 	--insercion en tabla temp
 	EXEC SP_EXECUTESQL @CONSULTA
-	--insersion de datos de la tabla temp en la tabla accesorio_electronico
+	--insersion de datos de la tabla temp en la tabla producto
+	insert into catalogo.producto (nombre, precioUsd)
+	select distinct prod, cast(precio as numeric(10,2))
+	from #accesoriosTemp;
+	*/
+
+	/*
 	insert into catalogo.accesorio_electronico (producto, precioUnitUsd)
 	select prod, cast(precio as numeric(10,2))
 	from #accesoriosTemp;
+	*/
 	--elimino tabla temp
 	drop table #accesoriosTemp;
 end
 go
 
 --Productos_importados.xlsx
-CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_IMPORTADOS_XLSX (@RUTA VARCHAR(75)) AS
+CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_IMPORTADOS_XLSX (@RUTA NVARCHAR(255)) AS
 begin
 	--creo tabla temporal
 	create table #prod_imp_temp(
@@ -62,7 +121,7 @@ begin
 		PrecioUnidad varchar(30)
 	);
 	
-	DECLARE @CONSULTA VARCHAR(250)
+	DECLARE @CONSULTA NVARCHAR(max)
 	SET @CONSULTA = 'insert into #prod_imp_temp 
 		SELECT *
 		FROM OPENROWSET("Microsoft.ACE.OLEDB.12.0",
@@ -71,19 +130,24 @@ begin
 	--inserto en tabla temporal
 	EXEC SP_EXECUTESQL @CONSULTA;
 
-	--inserto desde tabla temporal en la tabla destino
+	--inserto desde tabla temporal en la tabla producto
+	insert into catalogo.producto (nombre, proveedor, categoria, cantXunidad, precio)
+	select NombreProducto, Proveedor, Categoria, CantidadPorUnidad, 
+		cast(PrecioUnidad as numeric(10,2))
+	from #prod_imp_temp;
+	/*
 	insert into catalogo.producto_importado
 	select idProd, NombreProducto, Proveedor, Categoria, CantidadPorUnidad, 
 		cast(PrecioUnidad as numeric(10,2))
 	from #prod_imp_temp;
-	
+	*/
 	--elimino la tabla temporal
 	drop table #prod_imp_temp;
 end
 go
 
 --tabla sucursal desde informacion_complementaria.xlsx
-CREATE OR ALTER PROCEDURE SUCURSAL.CARGAR_SUCURSALES_XLSX (@RUTA VARCHAR(75)) AS
+CREATE OR ALTER PROCEDURE SUCURSAL.CARGAR_SUCURSALES_XLSX (@RUTA NVARCHAR(255)) AS
 begin
 	--creo tabla temporal
 	create table #sucursal_temp(
@@ -93,7 +157,7 @@ begin
 		telefono varchar(15),
 	);
 
-	DECLARE @CONSULTA VARCHAR(250)
+	DECLARE @CONSULTA NVARCHAR(max)
 	SET @CONSULTA = 'insert into #sucursal_temp (ciudad, direccion, horario, telefono)
 		SELECT *
 		FROM OPENROWSET("Microsoft.ACE.OLEDB.12.0",
@@ -113,7 +177,7 @@ end
 go
 
 --tabla empleado desde informacion_complementaria.xlsx
-create or alter procedure SUCURSAL.CARGAR_EMPLEADOS_XLSX (@RUTA VARCHAR(75)) as
+create or alter procedure SUCURSAL.CARGAR_EMPLEADOS_XLSX (@RUTA NVARCHAR(255)) as
 begin
 	--creo tabla temporal
 	create table #empl_temp(
@@ -130,7 +194,7 @@ begin
 		turno varchar(20)
 	);
 
-	DECLARE @CONSULTA VARCHAR(250)
+	DECLARE @CONSULTA NVARCHAR(max)
 	SET @CONSULTA = 'insert into #empl_temp
 		SELECT *
 		FROM OPENROWSET("Microsoft.ACE.OLEDB.12.0",
@@ -175,47 +239,9 @@ begin
 end
 go
 
---inserto desde catalogo.csv en tabla producto
-CREATE OR ALTER PROCEDURE CATALOGO.CARGAR_PRODUCTOS_CSV (@RUTA VARCHAR(75)) AS
-begin
-	--creo tabla temporal
-	create table #productos_temp(
-		id VARCHAR(15),
-		categoria varchar(50),
-		nombre varchar(100),
-		precio varchar(50),
-		precio_referencia varchar(50),
-		unidad_referencia varchar(10),
-		fecha varchar(50)
-	);
-
-	DECLARE @CONSULTA VARCHAR(250)
-	SET @CONSULTA = 'BULK INSERT #productos_temp 
-	FROM "' + @RUTA + '"
-	   WITH (
-		  FIELDTERMINATOR = ",",	
-		  ROWTERMINATOR = "0x0a",	
-		  FIELDQUOTE = """,
-		  firstrow = 2,			
-		  codepage = "65001",		
-		  FORMAT = "CSV");'
-	--inserto en tabla temporal
-	EXEC SP_EXECUTESQL @CONSULTA
-
-	--desde tabla temporal inserto en la tabla producto
-	insert into catalogo.producto
-	select cast(id as int), categoria, nombre, cast(precio as numeric(10,2)), 
-		cast(precio_referencia as numeric(10,2)), unidad_referencia, cast(fecha as smalldatetime)
-	from #productos_temp
-
-	--elimino tabla temporal
-	drop table #productos_temp;
-end
-go
-
 
 --inserto desde ventas_registradas.csv en tabla ventas registradas
-CREATE OR ALTER PROCEDURE VENTASSUCURSAL.CARGAR_VENTAS_REGISTRADAS_CSV (@RUTA VARCHAR(75)) AS
+CREATE OR ALTER PROCEDURE VENTASSUCURSAL.CARGAR_VENTAS_REGISTRADAS_CSV (@RUTA NVARCHAR(255)) AS
 begin
 	--creo tabla temporal
 	create table #ventas_temp(
@@ -234,7 +260,7 @@ begin
 		identificador_de_pago varchar(50)
 	);
 
-	DECLARE @CONSULTA VARCHAR(250)
+	DECLARE @CONSULTA NVARCHAR(max)
 	SET @CONSULTA = 'BULK INSERT #ventas_temp 
 	FROM "' + @RUTA + '"
 	   WITH (
