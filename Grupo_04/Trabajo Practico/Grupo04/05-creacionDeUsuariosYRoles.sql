@@ -1,4 +1,13 @@
 ----------------------------------CREACION DE USUARIOS Y ROLES------------------------------
+/*
+Cuando un cliente reclama la devolución de un producto se genera una nota de crédito por el
+valor del producto o un producto del mismo tipo.
+En el caso de que el cliente solicite la nota de crédito, solo los Supervisores tienen el permiso
+para generarla.
+Tener en cuenta que la nota de crédito debe estar asociada a una Factura con estado pagada.
+Asigne los roles correspondientes para poder cumplir con este requisito.
+*/
+
 --creacion de usuarios y roles a nivel base de datos
 use Com5600G04;
 go
