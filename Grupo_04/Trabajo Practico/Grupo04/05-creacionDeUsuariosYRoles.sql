@@ -1,9 +1,18 @@
 ----------------------------------CREACION DE USUARIOS Y ROLES------------------------------
+/*
+Cuando un cliente reclama la devolución de un producto se genera una nota de crédito por el
+valor del producto o un producto del mismo tipo.
+En el caso de que el cliente solicite la nota de crédito, solo los Supervisores tienen el permiso
+para generarla.
+Tener en cuenta que la nota de crédito debe estar asociada a una Factura con estado pagada.
+Asigne los roles correspondientes para poder cumplir con este requisito.
+*/
+
 --creacion de usuarios y roles a nivel base de datos
 use Com5600G04;
 go
 
---creacion de usuarios
+--CREACION DE USUARIOS
 create user gerente_suc for login gerente_sucursal;
 go
 
@@ -14,7 +23,7 @@ create user cajero_suc for login cajero_sucursal;
 go
 
 
---creacion de roles gerente, supervisor y cajero
+--CREACION DE ROLES
 create role gerente;
 go
 create role supervisor;
@@ -23,36 +32,24 @@ create role cajero;
 go
 
 
---otorgo permisos a los roles creados
-/*
-cajero: 
-	debe tener permisos sobre las tablas de productos(solo para ver, select), factura(insert) 
-	y ventas registradas(insert).
-
-supervisor: 
-	debe tener permisos sobre las mismas tablas de cajero, la tabla nota de credito(insert)
-	y debe tener acceso a los esquiemas catalogo y ventas.
-
-gerente:
-	debe tener permisos sobre todas las tablas y sobre todos los esquiemas.
-*/
-
-
---PERMISOS PARA CAJERO
+--PERMISOS PARA ROL CAJERO
 --para ver productos
-grant select on catalogo.productos to cajero;
+grant select on catalogo.producto to cajero;
 go
-grant select on catalogo.accesorio_electronico to cajero;
-go
-grant select on catalogo.producto_importado to cajero;
+--para ver clientes
+grant select on VENTASSUCURSAL.cliente to cajero;
+--para insertar ventas efectuadas
+grant execute on object VENTASSUCURSAL.REGISTRAR_VENTA to cajero;
 go
 --para generar facturas
-grant execute on object ventasSucursal.crear_factura to cajero;
+grant execute on object VENTASSUCURSAL.CREAR_PREFACTURA to cajero;
 go
---para insertar ventas efectuadas
---grant execute on object ventasSucursal.insertar_venta to cajero;
---go
-
+grant execute on object VENTASSUCURSAL.EMITIR_FACT to cajero;
+go
+grant execute on object VENTASSUCURSAL.CREAR_DETALLE to cajero;
+go
+grant execute on object VENTASSUCURSAL.CREAR_MEDIO to cajero;
+go
 
 
 --PERMISOS PARA SUPERVISOR
@@ -60,49 +57,159 @@ go
 grant select on schema::catalogo to supervisor;
 go
 grant select on schema::ventasSucursal to supervisor;
---para productos
-grant select on catalogo.productos to supervisor;
+--para ver productos
+grant select on catalogo.producto to supervisor;
 go
-grant select on catalogo.accesorio_electronico to supervisor;
+--para ver clientes
+grant select on VENTASSUCURSAL.cliente to supervisor;
 go
-grant select on catalogo.producto_importado to supervisor;
+--para ver medios de pago
+grant select on VENTASSUCURSAL.medio_pago to supervisor;
 go
+
+--registrar, eliminar y actualizar productos
+grant execute on object CATALOGO.REGISTRAR_PRODUCTO to supervisor;
+go
+grant execute on object CATALOGO.ELIMINAR_PRODUCTO to supervisor;
+go
+grant execute on object CATALOGO.ACTUALIZAR_CATEGORIA_PRODUCTO to supervisor;
+go
+grant execute on object CATALOGO.ACTUALIZAR_NOMBRE_PRODUCTO to supervisor;
+go
+grant execute on object CATALOGO.ACTUALIZAR_PRECIO_PRODUCTO to supervisor;
+go
+grant execute on object CATALOGO.ACTUALIZAR_PRECIO_REFERENCIA_PRODUCTO to supervisor;
+go
+grant execute on object CATALOGO.ACTUALIZAR_FECHA_PRODUCTO to supervisor;
+go
+grant execute on object CATALOGO.ACTUALIZAR_UNIDAD_REFERENCIA to supervisor;
+go
+
+--registro de clientes, alta y baja
+grant execute on object VENTASSUCURSAL.REGISTRAR_CLIENTE to supervisor;
+go
+grant execute on object VENTASSUCURSAL.BAJA_CLIENTE to supervisor;
+go
+grant execute on object VENTASSUCURSAL.ALTA_CLIENTE to supervisor;
+go
+
+--para insertar, validar e invalidar ventas efectuadas
+grant execute on object VENTASSUCURSAL.REGISTRAR_VENTA to supervisor;
+go
+grant execute on object VENTASSUCURSAL.VALIDAR_VENTA to supervisor;
+go
+grant execute on object VENTASSUCURSAL.INVALIDAR_VENTA to supervisor;
+go
+
+--para generar facturas
+grant execute on object VENTASSUCURSAL.CREAR_PREFACTURA to supervisor;
+go
+grant execute on object VENTASSUCURSAL.EMITIR_FACT to supervisor;
+go
+grant execute on object VENTASSUCURSAL.CREAR_DETALLE to supervisor;
+go
+grant execute on object VENTASSUCURSAL.ELIMINAR_DETALLE to supervisor;
+go
+grant execute on object VENTASSUCURSAL.CREAR_MEDIO to supervisor;
+go
+grant execute on object VENTASSUCURSAL.ELIMINAR_MEDIO to supervisor;
+go
+grant execute on object VENTASSUCURSAL.ACTUALIZAR_PAGO_FACT to supervisor;
+go
+/*
 --para generar nota de credito
 grant execute on object ventasSucursal.crear_nota to supervisor;
 go
---para generar facturas
-grant execute on object ventasSucursal.crear_factura to supervisor;
-go
---para insertar ventas efectuadas
---grant execute on object ventasSucursal.insertar_venta to supervisor;
+*/
 
 
 --PERMISOS PARA GERENTE
---para esquemas
+--para ver tablas de los esquemas
 grant select on schema::catalogo to gerente;
 go
-grant select on schema::ventasSucursal to gerente;
+grant select on schema::VENTASSUCURSAL to gerente;
 go
 grant select on schema::sucursal to gerente;
 go
---para productos
-grant select on catalogo.productos to gerente;
-go
-grant select on catalogo.accesorio_electronico to gerente;
-go
-grant select on catalogo.producto_importado to gerente;
-go
---para generar nota de credito
-grant execute on object ventasSucursal.crear_nota to gerente;
-go
---para generar facturas
-grant execute on object ventasSucursal.crear_factura to gerente;
-go
---para insertar ventas efectuadas
---grant execute on object ventasSucursal.insertar_venta to gerente;
---go
 
---
+--sucursal
+grant execute on object SUCURSAL.REGISTRAR_SUCURSAL to gerente;
+go
+grant execute on object SUCURSAL.BAJAR_SUCURSAL to gerente;
+go
+grant execute on object SUCURSAL.ALTA_SUCURSAL to gerente;
+go
+grant execute on object SUCURSAL.ACTUALIZAR_DIRECCION_SUCURSAL to gerente;
+go
+grant execute on object SUCURSAL.ACTUALIZAR_HORARIO_SUCURSAL to gerente;
+go
+grant execute on object SUCURSAL.ACTUALIZAR_TELEFONO_SUCURSAL to gerente;
+go
+
+--empleados
+grant execute on object SUCURSAL.REGISTRAR_EMPLEADO to gerente;
+go
+grant execute on object SUCURSAL.ALTA_EMPLEADO to gerente;
+go
+grant execute on object SUCURSAL.BAJAR_EMPLEADO to gerente;
+go
+
+--productos
+grant execute on object CATALOGO.REGISTRAR_PRODUCTO to gerente;
+go
+grant execute on object CATALOGO.ELIMINAR_PRODUCTO to gerente;
+go
+grant execute on object CATALOGO.ACTUALIZAR_CATEGORIA_PRODUCTO to gerente;
+go
+grant execute on object CATALOGO.ACTUALIZAR_NOMBRE_PRODUCTO to gerente;
+go
+grant execute on object CATALOGO.ACTUALIZAR_PRECIO_PRODUCTO to gerente;
+go
+grant execute on object CATALOGO.ACTUALIZAR_PRECIO_REFERENCIA_PRODUCTO to gerente;
+go
+grant execute on object CATALOGO.ACTUALIZAR_FECHA_PRODUCTO to gerente;
+go
+grant execute on object CATALOGO.ACTUALIZAR_UNIDAD_REFERENCIA to gerente;
+go
+
+--registro de clientes, alta y baja
+grant execute on object VENTASSUCURSAL.REGISTRAR_CLIENTE to gerente;
+go
+grant execute on object VENTASSUCURSAL.BAJA_CLIENTE to gerente;
+go
+grant execute on object VENTASSUCURSAL.ALTA_CLIENTE to gerente;
+go
+
+--para insertar, validar e invalidar ventas efectuadas
+grant execute on object VENTASSUCURSAL.REGISTRAR_VENTA to gerente;
+go
+grant execute on object VENTASSUCURSAL.VALIDAR_VENTA to gerente;
+go
+grant execute on object VENTASSUCURSAL.INVALIDAR_VENTA to gerente;
+go
+
+--para generar facturas
+grant execute on object VENTASSUCURSAL.CREAR_PREFACTURA to gerente;
+go
+grant execute on object VENTASSUCURSAL.EMITIR_FACT to gerente;
+go
+grant execute on object VENTASSUCURSAL.CREAR_DETALLE to gerente;
+go
+grant execute on object VENTASSUCURSAL.ELIMINAR_DETALLE to gerente;
+go
+grant execute on object VENTASSUCURSAL.CREAR_MEDIO to gerente;
+go
+grant execute on object VENTASSUCURSAL.ELIMINAR_MEDIO to gerente;
+go
+grant execute on object VENTASSUCURSAL.ACTUALIZAR_PAGO_FACT to gerente;
+go
+
+/*
+--para generar nota de credito
+grant execute on object ventasSucursal.crear_nota to supervisor;
+go
+*/
+
 
 
 --AÑADO LOS ROLES A LOS USUARIOS CREADOS

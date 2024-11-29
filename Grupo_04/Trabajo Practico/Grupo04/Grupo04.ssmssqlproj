@@ -77,6 +77,12 @@
           <AssociatedConnUserName />
           <FullPath>05-creacionDeUsuariosYRoles.sql</FullPath>
         </FileNode>
+        <FileNode Name="05-encriptacionDeDatosPersonales.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-8HAA721\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-8HAA721\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>05-encriptacionDeDatosPersonales.sql</FullPath>
+        </FileNode>
       </Items>
     </LogicalFolder>
     <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
