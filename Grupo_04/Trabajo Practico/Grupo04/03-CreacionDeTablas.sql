@@ -75,17 +75,16 @@ IF NOT EXISTS (SELECT *
                  AND TABLE_NAME = 'producto')
 BEGIN
 	create table catalogo.producto(
-		id int identity(1, 1) primary key,
+		id int identity(1, 1) not null primary key,
 		categoria varchar(50),
 		nombre varchar(100),
 		cantPorUnidad varchar(25),
 		precio numeric(10, 2) check (precio > 0),
-		precio_referencia numeric(10, 2) check (precio_referencia > 0),
+		precio_referencia numeric(10, 3) check (precio_referencia > 0),
 		unidad_referencia varchar(10),
-		fecha datetime,
-		precioUsd numeric(10, 2),
-		proveedor varchar(50),
-		cantXunidad varchar(50)
+		fecha datetime default getdate(),
+		precioUsd numeric(10, 3),
+		proveedor varchar(50)
 	)
 END
 go
@@ -114,7 +113,8 @@ IF NOT EXISTS (SELECT *
                  AND TABLE_NAME = 'empleado')
 BEGIN
 	create table SUCURSAL.empleado(
-		legajoId int identity(1, 1) primary key,
+		id int identity(1, 1) primary key,
+		legajo int,
 		nombre varchar(50),
 		apellido varchar(50),
 		dni int,
@@ -207,6 +207,7 @@ IF NOT EXISTS (SELECT *
 BEGIN
 	create table ventasSucursal.venta_registrada(
 		id int identity(1, 1) primary key,
+		identificador_pago VARCHAR(50),
 		id_factura int foreign key references ventasSucursal.factura(id),
 		ciudad varchar(20),
 		fecha date,
@@ -214,7 +215,7 @@ BEGIN
 		empleado_id int,
 		medio_pago int foreign key references ventassucursal.medio_pago(id),
 		baja datetime default null,
-		constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(legajoId)
+		constraint fk_ventas foreign key (empleado_id) references SUCURSAL.empleado(Id)
 	)
 END
 go
